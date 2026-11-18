@@ -24,8 +24,10 @@ export default function LoginForm({ onLogin }) {
   }
 
   return (
+    <div className="login-pagina">
     <form onSubmit={submit} className="card login">
-      <h1>El Yunque</h1>
+      <h1 className="marca-grande">EL YUNQUE</h1>
+      <p className="muted">Gestión del taller de metalistería</p>
       <label>
         Email
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -37,5 +39,6 @@ export default function LoginForm({ onLogin }) {
       {error && <p role="alert" className="error">{error}</p>}
       <button type="submit" disabled={cargando}>{cargando ? 'Ingresando…' : 'Ingresar'}</button>
     </form>
+    </div>
   );
 }

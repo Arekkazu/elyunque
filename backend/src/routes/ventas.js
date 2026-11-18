@@ -3,11 +3,13 @@ const db = require('../config/db');
 const { HttpError, asyncHandler } = require('../config/httpError');
 const { authenticate, authorize } = require('../middlewares/auth');
 const { registrarVenta } = require('../services/cotizacionService');
+const { rules } = require('../middlewares/validate');
 
 router.use(authenticate, authorize('Vendedor'));
 
 router.post(
   '/',
+  rules.ventaCrear,
   asyncHandler(async (req, res) => {
     if (!req.body.cotizacion_id) throw new HttpError(400, 'cotizacion_id es obligatorio');
     res.status(201).json(await registrarVenta(req.body.cotizacion_id, req.user.id));
@@ -16,6 +18,7 @@ router.post(
 
 router.get(
   '/',
+  rules.ventasListar,
   asyncHandler(async (req, res) => {
     const page = Math.max(1, Number(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 10));

@@ -16,7 +16,8 @@ const op = (tag, summary, { body, params = [], status = 200, secured = true, rol
   responses: {
     [status]: { description: 'OK' },
     ...(secured ? { 401: { description: 'No autenticado' }, 403: { description: 'Sin permisos' } } : {}),
-    400: { description: 'Datos inválidos' },
+    400: { description: 'Datos inválidos (lista de campos en `campos`)' },
+    429: { description: 'Demasiadas peticiones' },
     409: { description: 'Conflicto de estado' },
   },
 });
@@ -30,6 +31,15 @@ module.exports = {
     securitySchemes: { bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' } },
   },
   paths: {
+    '/health': {
+      get: op('Monitoreo', 'Estado del servidor, BD y uptime (503 si la BD falla)', { secured: false }),
+    },
+    '/metrics': {
+      get: op('Monitoreo', 'Métricas: peticiones, tiempo promedio y memoria', { roles: 'Administrador' }),
+    },
+    '/monitoreo/logs': {
+      get: op('Monitoreo', 'Últimas entradas de access.log y error.log', { params: [q('access', int), q('errors', int)], roles: 'Administrador' }),
+    },
     '/auth/login': {
       post: op('Auth', 'Iniciar sesión y obtener JWT', {
         secured: false,

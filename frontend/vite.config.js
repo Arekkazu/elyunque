@@ -11,6 +11,13 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/test/setup.js',
-    coverage: { include: ['src/**/*.{js,jsx}'], exclude: ['src/main.jsx', 'src/test/**'] },
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.{js,jsx}'],
+      exclude: ['src/main.jsx', 'src/test/**'],
+      reporter: ['text', 'html'],
+      // El pipeline falla si la cobertura baja del 80 %
+      thresholds: { lines: 80, statements: 80, functions: 80, branches: 70 },
+    },
   },
 });

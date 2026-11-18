@@ -2,6 +2,7 @@ const router = require('express').Router();
 const db = require('../config/db');
 const { HttpError, asyncHandler } = require('../config/httpError');
 const { authenticate, authorize } = require('../middlewares/auth');
+const { rules } = require('../middlewares/validate');
 
 router.use(authenticate, authorize('Vendedor', 'Encargado'));
 
@@ -20,6 +21,7 @@ router.get(
 
 router.get(
   '/:id',
+  rules.soloId,
   asyncHandler(async (req, res) => {
     const { rows } = await db.query('SELECT * FROM clientes WHERE id=$1', [req.params.id]);
     if (!rows[0]) throw new HttpError(404, 'Cliente no encontrado');
@@ -30,6 +32,7 @@ router.get(
 router.post(
   '/',
   authorize('Vendedor'),
+  rules.clienteCrear,
   asyncHandler(async (req, res) => {
     const { nombre, documento, telefono, email, direccion } = req.body;
     if (!nombre || !documento) throw new HttpError(400, 'nombre y documento son obligatorios');
@@ -44,6 +47,7 @@ router.post(
 router.put(
   '/:id',
   authorize('Vendedor'),
+  rules.clienteEditar,
   asyncHandler(async (req, res) => {
     const { nombre, documento, telefono, email, direccion } = req.body;
     const { rows } = await db.query(
@@ -61,6 +65,7 @@ router.put(
 router.delete(
   '/:id',
   authorize('Vendedor'),
+  rules.soloId,
   asyncHandler(async (req, res) => {
     const { rowCount } = await db.query('UPDATE clientes SET activo=false WHERE id=$1', [req.params.id]);
     if (!rowCount) throw new HttpError(404, 'Cliente no encontrado');

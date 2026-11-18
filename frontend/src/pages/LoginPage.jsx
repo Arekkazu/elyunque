@@ -5,6 +5,6 @@ import { useAuth } from '../context/AuthContext';
 export default function LoginPage() {
   const { usuario, login } = useAuth();
   const navigate = useNavigate();
-  if (usuario) return <Navigate to="/solicitudes" replace />;
-  return <LoginForm onLogin={async (e, p) => { await login(e, p); navigate('/solicitudes'); }} />;
+  if (usuario) return <Navigate to="/" replace />;
+  return <LoginForm onLogin={async (e, p) => { await login(e, p); navigate('/'); }} />;
 }

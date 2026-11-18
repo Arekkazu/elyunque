@@ -2,6 +2,7 @@ const router = require('express').Router();
 const db = require('../config/db');
 const { HttpError, asyncHandler } = require('../config/httpError');
 const { authenticate, authorize } = require('../middlewares/auth');
+const { rules } = require('../middlewares/validate');
 const { calcularSolicitud } = require('../services/calculoService');
 const { notificarCambioEstado } = require('../services/notificacionService');
 
@@ -45,6 +46,7 @@ router.get(
 router.post(
   '/',
   authorize('Vendedor'),
+  rules.solicitudCrear,
   asyncHandler(async (req, res) => {
     const { cliente_id, descripcion, horas_estimadas = 0 } = req.body;
     if (!cliente_id || !descripcion) throw new HttpError(400, 'cliente_id y descripcion son obligatorios');
@@ -59,6 +61,7 @@ router.post(
 
 router.get(
   '/:id/estado',
+  rules.soloId,
   authorize('Vendedor', 'Encargado', 'Cliente'),
   asyncHandler(async (req, res) => {
     const sol = await getSolicitud(req.params.id);
@@ -83,6 +86,7 @@ router.get(
 
 router.get(
   '/:id',
+  rules.soloId,
   authorize('Vendedor', 'Encargado'),
   asyncHandler(async (req, res) => {
     const sol = await getSolicitud(req.params.id);
@@ -94,6 +98,7 @@ router.get(
 
 router.put(
   '/:id',
+  rules.solicitudEditar,
   authorize('Vendedor'),
   asyncHandler(async (req, res) => {
     exigirInicial(await getSolicitud(req.params.id), 'editar');
@@ -112,6 +117,7 @@ router.put(
 
 router.patch(
   '/:id/cancelar',
+  rules.soloId,
   authorize('Vendedor'),
   asyncHandler(async (req, res) => {
     const sol = await getSolicitud(req.params.id);
@@ -129,6 +135,7 @@ router.patch(
 
 router.post(
   '/:id/materiales',
+  rules.material,
   authorize('Vendedor', 'Encargado'),
   asyncHandler(async (req, res) => {
     exigirInicial(await getSolicitud(req.params.id), 'agregar materiales a');
@@ -146,6 +153,7 @@ router.post(
 
 router.post(
   '/:id/calcular',
+  rules.soloId,
   authorize('Vendedor', 'Encargado'),
   asyncHandler(async (req, res) => {
     res.json(await calcularSolicitud(req.params.id));

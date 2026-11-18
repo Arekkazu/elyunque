@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, mensajeError, money } from '../services/api';
+import EstadoStepper from '../components/EstadoStepper';
 
 export default function EstadoPage() {
   const { id } = useParams();
@@ -16,7 +17,7 @@ export default function EstadoPage() {
   return (
     <div className="card">
       <h2>Solicitud #{estado.solicitud_id}</h2>
-      <p>Estado: <span className={`badge ${estado.estado}`}>{estado.estado}</span></p>
+      <EstadoStepper estado={estado.estado} />
       <p>Última actualización: {new Date(estado.actualizado).toLocaleString('es-CO')}</p>
       {estado.cotizacion && (
         <p>Cotización {estado.cotizacion.consecutivo}: {money(estado.cotizacion.total)} ({estado.cotizacion.estado})</p>

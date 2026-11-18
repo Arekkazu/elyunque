@@ -1,0 +1,41 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 140
+skinparam defaultFontName Arial
+skinparam ArrowFontSize 11
+left to right direction
+actor Administrador as A
+actor Vendedor as V
+actor Encargado as E
+actor Cliente as C
+rectangle "Sistema El Yunque" {
+  usecase "Iniciar sesión" as U1
+  usecase "Gestionar usuarios y roles" as U2
+  usecase "Gestionar clientes" as U3
+  usecase "Registrar solicitud de trabajo" as U4
+  usecase "Registrar materiales" as U5
+  usecase "Calcular costo" as U6
+  usecase "Generar cotización" as U7
+  usecase "Registrar decisión del cliente" as U8
+  usecase "Registrar venta" as U9
+  usecase "Consultar estado de la solicitud" as U10
+  usecase "Monitorear el sistema" as U11
+}
+A --> U2
+A --> U11
+V --> U3
+V --> U4
+V --> U8
+V --> U9
+V --> U7
+E --> U5
+E --> U6
+E --> U7
+C --> U10
+V --> U10
+A --> U1
+V --> U1
+E --> U1
+C --> U1
+@enduml

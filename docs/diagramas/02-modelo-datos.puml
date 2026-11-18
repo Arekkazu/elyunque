@@ -1,0 +1,74 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 140
+skinparam defaultFontName Arial
+skinparam ArrowFontSize 11
+hide circle
+left to right direction
+skinparam linetype ortho
+entity usuarios {
+  *id : serial <<PK>>
+  --
+  nombre
+  email <<único>>
+  password_hash
+  rol
+  activo
+}
+entity clientes {
+  *id : serial <<PK>>
+  --
+  nombre
+  documento <<único>>
+  telefono, email, direccion
+  activo
+  usuario_id <<FK>>
+}
+entity solicitudes {
+  *id : serial <<PK>>
+  --
+  cliente_id <<FK>>
+  descripcion
+  horas_estimadas
+  estado
+  created_by <<FK>>
+}
+entity materiales_solicitud {
+  *id : serial <<PK>>
+  --
+  solicitud_id <<FK>>
+  nombre
+  cantidad
+  precio_unitario
+}
+entity cotizaciones {
+  *id : serial <<PK>>
+  --
+  solicitud_id <<FK>>
+  consecutivo <<único>>
+  costo_materiales
+  costo_mano_obra
+  total
+  estado
+}
+entity ventas {
+  *id : serial <<PK>>
+  --
+  cotizacion_id <<FK, único>>
+  solicitud_id <<FK>>
+  total
+  vendedor_id <<FK>>
+}
+entity parametros {
+  *clave : varchar <<PK>>
+  --
+  valor
+}
+clientes ||--o{ solicitudes
+solicitudes ||--o{ materiales_solicitud
+solicitudes ||--o{ cotizaciones
+cotizaciones ||--o| ventas
+usuarios |o--o{ clientes
+usuarios |o--o{ ventas
+@enduml

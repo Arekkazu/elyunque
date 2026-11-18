@@ -1,12 +1,17 @@
 # El Yunque — Sistema de gestión del taller
 
-Monorepo con la API (Node.js/Express + PostgreSQL) y el frontend (React + Vite).
-Implementa lo completado en los Sprints 1–3 del Jira (proyecto ELYUNQUE): backend, base de datos, JWT/roles, Swagger, frontend React y pruebas.
+[![CI](https://github.com/Arekkazu/elyunque/actions/workflows/ci.yml/badge.svg)](https://github.com/Arekkazu/elyunque/actions/workflows/ci.yml)
+
+Monorepo con la API (Node.js/Express + PostgreSQL) y el frontend (React + Vite). Cubre el ciclo DevSecOps completo del proyecto (Jira ELYUNQUE, Sprints 1–7): backend, frontend, pruebas, CI/CD, seguridad y observabilidad.
 
 ```
-backend/    API REST, migraciones, seed, Swagger, colección Postman, pruebas (Jest + Supertest)
-frontend/   SPA React (Router, AuthContext, axios), pruebas (Vitest + Testing Library), Nginx
-docker-compose.yml   PostgreSQL + backend + frontend
+backend/              API REST, migraciones, seed, Swagger, Postman, pruebas (Jest + Supertest)
+frontend/             SPA React (Router, AuthContext, axios), pruebas (Vitest + Testing Library), Nginx
+docker-compose.yml        Desarrollo/demo: PostgreSQL + backend + frontend
+docker-compose.prod.yml   Producción en VPS (imágenes de GHCR)
+.github/workflows/    ci.yml (pruebas, cobertura, auditoría, build) y cd.yml (despliegue por SSH)
+deploy/               Preparación del VPS y variables de producción
+docs/                 Reporte de seguridad, diagramas UML (PlantUML), capturas y reportes HTML de cobertura
 ```
 
 ## Arranque con Docker
@@ -16,8 +21,8 @@ cp .env.example .env
 docker compose up --build
 ```
 
-- Frontend: http://localhost:8080
-- API: http://localhost:3000 · Swagger: http://localhost:3000/api-docs
+- Frontend: http://localhost:8080 (la API se consume en `/api`)
+- API: http://localhost:3000 · Swagger: http://localhost:3000/api-docs · Salud: http://localhost:3000/health
 
 Usuarios demo (solo con `SEED_ON_START=true`):
 
@@ -28,7 +33,7 @@ Usuarios demo (solo con `SEED_ON_START=true`):
 | Encargado | encargado@elyunque.com | Encargado123! |
 | Cliente | cliente@elyunque.com | Cliente123! |
 
-**Cambie `JWT_SECRET` y desactive el seed en producción.**
+**En producción: cambie `JWT_SECRET`, las contraseñas y use `SEED_ON_START=false`.**
 
 ## Desarrollo local
 
@@ -44,8 +49,8 @@ cd frontend && npm install && npm run dev
 ## Pruebas
 
 ```bash
-cd backend && npm test    # crea/usa la BD elyunque_test; umbral de cobertura 80%
-cd frontend && npm test
+cd backend && npm test    # crea/usa la BD elyunque_test; falla si la cobertura baja de 80 %
+cd frontend && npm test   # falla si la cobertura baja de 80 %
 ```
 
 ## Flujo de negocio
@@ -57,13 +62,23 @@ Costo = materiales + horas × `tarifa_hora` (tabla `parametros`). Cada cotizaci�
 
 | Rol | Acceso |
 |---|---|
-| Administrador | Todo, incluida la gestión de usuarios |
+| Administrador | Todo, incluida la gestión de usuarios y el monitoreo |
 | Vendedor | Clientes, solicitudes, cotizaciones, decisión y ventas |
 | Encargado | Consulta de clientes/solicitudes, materiales, cálculo y cotizaciones |
 | Cliente | Consulta del estado de sus propias solicitudes |
 
-La colección Postman está en `backend/postman/` (regenerar con `npm run postman`).
+## Seguridad
 
-## Pendiente (Sprints 4–7)
+Validación y sanitización (express-validator), Helmet, CORS con lista blanca, límite de intentos de login, JWT de máximo 8 h con revocación al desactivar usuarios y `npm audit` en CI. Detalle y estado OWASP en [docs/reporte-seguridad.md](docs/reporte-seguridad.md).
 
-CI con GitHub Actions, despliegue en VPS, seguridad (validación, Helmet, rate limit) y observabilidad.
+## Observabilidad
+
+- `GET /health` (público): estado, conexión a la BD y uptime; responde 503 si la BD falla. Úselo en UptimeRobot (intervalo de 5 min, correo de alerta).
+- `GET /metrics` y `GET /monitoreo/logs` (Administrador): peticiones, tiempo promedio, memoria y últimas entradas de `access.log` y `error.log` (JSON, en `backend/logs/` o el volumen `logs` de Docker).
+- Panel **Monitoreo** en el frontend (rol Administrador).
+
+## CI/CD
+
+- **CI** (`ci.yml`): en cada push y PR ejecuta `install`, `test-backend` (con PostgreSQL), `test-frontend`, `security-audit` y `docker-build`; publica los reportes de cobertura como artefactos. Para bloquear el merge con pruebas fallidas, active *Branch protection* en `main` y marque esos jobs como obligatorios.
+- **CD** (`cd.yml`): cuando el CI de `main` termina bien, publica las imágenes en GHCR y despliega en el VPS por SSH (`docker compose -f docker-compose.prod.yml pull && up -d`), verificando `/api/health`.
+- Secrets requeridos en GitHub: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`. Preparación del servidor: `sudo bash deploy/setup-vps.sh <usuario>` y `deploy/.env.production.example`.

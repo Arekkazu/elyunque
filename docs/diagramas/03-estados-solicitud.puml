@@ -1,0 +1,19 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 140
+skinparam defaultFontName Arial
+skinparam ArrowFontSize 11
+[*] --> inicial : crear solicitud
+inicial --> cotizada : generar cotización
+cotizada --> aceptada : cliente acepta
+cotizada --> rechazada : cliente rechaza
+aceptada --> vendida : registrar venta
+inicial --> cancelada : cancelar
+cotizada --> cancelada : cancelar
+aceptada --> cancelada : cancelar
+vendida --> [*]
+rechazada --> [*]
+cancelada --> [*]
+note right of inicial : Solo aquí se puede editar\ny agregar materiales
+@enduml

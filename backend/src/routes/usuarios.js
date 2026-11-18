@@ -3,6 +3,7 @@ const db = require('../config/db');
 const { HttpError, asyncHandler } = require('../config/httpError');
 const { authenticate, authorize } = require('../middlewares/auth');
 const { hashPassword } = require('../services/authService');
+const { rules } = require('../middlewares/validate');
 
 const ROLES = ['Administrador', 'Vendedor', 'Encargado', 'Cliente'];
 const COLS = 'id, nombre, email, rol, activo, created_at';
@@ -19,6 +20,7 @@ router.get(
 
 router.post(
   '/',
+  rules.usuarioCrear,
   asyncHandler(async (req, res) => {
     const { nombre, email, password, rol } = req.body;
     if (!nombre || !email || !password) throw new HttpError(400, 'nombre, email y password son obligatorios');
@@ -34,6 +36,7 @@ router.post(
 
 router.put(
   '/:id',
+  rules.usuarioEditar,
   asyncHandler(async (req, res) => {
     const { nombre, email, rol, password } = req.body;
     if (rol && !ROLES.includes(rol)) throw new HttpError(400, `rol debe ser uno de: ${ROLES.join(', ')}`);
@@ -50,6 +53,7 @@ router.put(
 
 router.patch(
   '/:id/desactivar',
+  rules.soloId,
   asyncHandler(async (req, res) => {
     if (Number(req.params.id) === req.user.id) throw new HttpError(409, 'No puede desactivarse a sí mismo');
     const { rows } = await db.query(`UPDATE usuarios SET activo=false WHERE id=$1 RETURNING ${COLS}`, [

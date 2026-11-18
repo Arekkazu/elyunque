@@ -8,6 +8,8 @@ import SolicitudesPage from './pages/SolicitudesPage';
 import SolicitudDetallePage from './pages/SolicitudDetallePage';
 import EstadoPage from './pages/EstadoPage';
 import VentasPage from './pages/VentasPage';
+import InicioPage from './pages/InicioPage';
+import MonitoreoPage from './pages/MonitoreoPage';
 
 const STAFF = ['Vendedor', 'Encargado'];
 
@@ -16,14 +18,16 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
+        <Route path="/" element={<PrivateRoute roles={[...STAFF, 'Cliente']}><InicioPage /></PrivateRoute>} />
         <Route path="/solicitudes" element={<PrivateRoute roles={[...STAFF, 'Cliente']}><SolicitudesPage /></PrivateRoute>} />
         <Route path="/solicitudes/:id" element={<PrivateRoute roles={STAFF}><SolicitudDetallePage /></PrivateRoute>} />
         <Route path="/estado/:id" element={<PrivateRoute roles={[...STAFF, 'Cliente']}><EstadoPage /></PrivateRoute>} />
         <Route path="/clientes" element={<PrivateRoute roles={STAFF}><ClientesPage /></PrivateRoute>} />
         <Route path="/ventas" element={<PrivateRoute roles={['Vendedor']}><VentasPage /></PrivateRoute>} />
         <Route path="/usuarios" element={<PrivateRoute roles={[]}><UsuariosPage /></PrivateRoute>} />
+        <Route path="/monitoreo" element={<PrivateRoute roles={[]}><MonitoreoPage /></PrivateRoute>} />
       </Route>
-      <Route path="*" element={<Navigate to="/solicitudes" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

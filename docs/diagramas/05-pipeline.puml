@@ -1,0 +1,24 @@
+@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam dpi 140
+skinparam defaultFontName Arial
+skinparam ArrowFontSize 11
+skinparam defaultTextAlignment center
+rectangle "push / pull request" as P
+rectangle "install\nnpm ci" as I
+rectangle "test-backend\nJest + PostgreSQL\ncobertura ≥ 80 %" as TB
+rectangle "test-frontend\nVitest + build\ncobertura ≥ 80 %" as TF
+rectangle "security-audit\nnpm audit (producción)" as SA
+rectangle "docker-build" as DB
+rectangle "CD (solo main)\nbuild + push imágenes GHCR" as CD
+rectangle "VPS\nSSH · docker compose pull/up\nverificación /api/health" as VPS
+P --> I
+I --> TB
+I --> TF
+I --> SA
+TB --> DB
+TF --> DB
+DB --> CD : CI exitoso en main
+CD --> VPS
+@enduml

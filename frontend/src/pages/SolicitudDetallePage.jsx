@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { api, mensajeError, money } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import DecisionCotizacion from '../components/DecisionCotizacion';
+import EstadoStepper from '../components/EstadoStepper';
 
 export default function SolicitudDetallePage() {
   const { id } = useParams();
@@ -42,7 +43,8 @@ export default function SolicitudDetallePage() {
 
   return (
     <>
-      <h2>Solicitud #{sol.id} <span className={`badge ${sol.estado}`}>{sol.estado}</span></h2>
+      <h2>Solicitud #{sol.id}</h2>
+      <EstadoStepper estado={sol.estado} />
       {error && <p role="alert" className="error">{error}</p>}
       <div className="card">
         <p><strong>{sol.cliente_nombre}</strong> — {sol.descripcion}</p>

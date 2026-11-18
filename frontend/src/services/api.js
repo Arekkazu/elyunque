@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+// Redirección aislada para poder simularla en pruebas
+export const navegar = { aLogin: () => window.location.assign('/login') };
+
 export const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || '/api' });
 
 // Adjunta el JWT en cada petición
@@ -18,13 +21,17 @@ api.interceptors.response.use(
     if (status === 401 && !esLogin) {
       localStorage.removeItem('token');
       localStorage.removeItem('usuario');
-      if (window.location.pathname !== '/login') window.location.assign('/login');
+      if (window.location.pathname !== '/login') navegar.aLogin();
     }
     if (status === 403) error.forbidden = true;
     return Promise.reject(error);
   }
 );
 
-export const mensajeError = (e) => e.response?.data?.error || 'No se pudo completar la operación';
+export const mensajeError = (e) => {
+  const data = e.response?.data;
+  if (data?.campos?.length) return `${data.error}: ${data.campos.map((c) => `${c.campo} ${c.mensaje}`).join('; ')}`;
+  return data?.error || 'No se pudo completar la operación';
+};
 export const money = (n) =>
   new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(n));
